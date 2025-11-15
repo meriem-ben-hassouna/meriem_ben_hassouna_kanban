@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kanban table</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      >
+      <h1>Kanban Table</h1>
+    </header>
+
+    <section class="user-info">
+      <h2>Personal Information</h2>
+      <form id="userForm">
+        <input type="text" name="nom" placeholder="Nom" required />
+        <input type="text" name="prenom" placeholder="PreNom" required />
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="tel" name="telephone" placeholder="Num" required />
+      </form>
+    </section>
+
+    <section class="task-creation">
+      <h2>Add a task</h2>
+      <div class="category-manage">
+        <h3>categories(5 max)</h3>
+        <div id="category-list"></div>
+        <div class="add-category">
+          <input type="text" id="newcategname" placeholder="category name" />
+          <select id="categ-colour">
+            <option value="#CD2C58">red</option>
+            <option value="#FFF2C6">Yellow</option>
+            <option value="#A1BC98">Green</option>
+            <option value="#9ECFD4">Blue</option>
+            <option value="#B7A3E3">Purple</option>
+          </select>
+          <button id="addcategbtn">add category</button>
+        </div>
+      </div>
+
+      <div class="task-form">
+        <input type="text" id="task title" placeholder="Task title" />
+        <select id="taskcategory"></select>
+        <button id="addtaskbtn">Add task</button>
+      </div>
+    </section>
+
+    <section class="kanban">
+      <div class="column" data-status="todo">
+        <h3>To Do</h3>
+        <div class="task-container" id="todo"></div>
+      </div>
+      <div class="column" data-status="inprogress">
+        <h3>To Do</h3>
+        <div class="task-container" id="inprogress"></div>
+      </div>
+      <div class="column" data-status="done">
+        <h3>To Do</h3>
+        <div class="task-container" id="done"></div>
+      </div>
+    </section>
+
+    <section class="notes-section">
+      <h2>Your notes</h2>
+      <textarea id="notes" placeholder="write you notes here..."></textarea>
+    </section>
+
+    <button id="savebtn" class="savebtn">save everything</button>
+
+    <footer class="about">
+      <h3>About me</h3>
+      <p>This Kanban project was created by Meriem Ben Hassouna.</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
