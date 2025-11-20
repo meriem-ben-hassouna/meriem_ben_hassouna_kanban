@@ -1,8 +1,26 @@
+/*inputs*/
 const nameInput = document.getElementById("nom");
 const prenomInput = document.getElementById("prenom");
 const emailInput = document.getElementById("email");
 const numInput = document.getElementById("num");
+const notesInput = document.getElementById("notes");
 
+const categoryInput = document.getElementById("newcategname");
+const categoryColor = document.getElementById("categ-colour");
+const addCategoryBtn = document.getElementById("addcategbtn");
+const categoryList = document.getElementById("category-list");
+
+const taskCategorySelect = document.getElementById("taskcategory");
+const taskInput = document.getElementById("tasktitle");
+const addTaskBtn = document.getElementById("addtaskbtn");
+
+const todoColumn = document.getElementById("todo");
+const inprogressColumn = document.getElementById("inprogress");
+const doneColumn = document.getElementById("done");
+
+const saveInfoBtn = document.getElementById("savebtn");
+
+/*form*/
 function validatePersonalInfo() {
   if (nameInput.value.trim() === "") return false;
   if (prenomInput.value.trim() === "") return false;
@@ -12,11 +30,7 @@ function validatePersonalInfo() {
   return true;
 }
 
-const categoryInput = document.getElementById("newcategname");
-const categoryColor = document.getElementById("categ-colour");
-const addCategoryBtn = document.getElementById("addcategbtn");
-const categoryList = document.getElementById("category-list");
-
+/*categories*/
 let categories = [];
 
 addCategoryBtn.addEventListener("click", () => {
@@ -29,45 +43,54 @@ addCategoryBtn.addEventListener("click", () => {
   const cat = { name, color };
   categories.push(cat);
 
-  const item = document.createElement("div");
-  item.innerText = name;
-  item.style.background = color;
-  item.className = "categoryTag";
-  categoryList.appendChild(item);
+  const tag = document.createElement("span");
+  tag.className = "category-tag";
+  tag.style.setProperty("--tag-color", color);
+  tag.textContent = name;
+  categoryList.appendChild(tag);
+
+  const option = document.createElement("option");
+  option.value = name;
+  option.textContent = name;
+  taskCategorySelect.appendChild(option);
 
   categoryInput.value = "";
 });
 
-const todoColumn = document.getElementById("todo");
-const inprogressColumn = document.getElementById("inprogress");
-const doneColumn = document.getElementById("done");
+/*task*/
+let draggedCard = null;
 
-const taskInput = document.getElementById("tasktitle");
-const addTaskBtn = document.getElementById("addtaskbtn");
-
-addTaskBtn.addEventListener("click", () => {
-  const title = taskInput.value.trim();
-  if (title === "") return alert("Task cannot be empty!");
-
-  const card = createCard(title);
-  todoColumn.appendChild(card);
-  taskInput.value = "";
-});
-
-function createCard(title) {
+function createCard(title, color = "", categoryName = "") {
   const card = document.createElement("div");
   card.className = "task-card";
   card.draggable = true;
-  card.innerText = title;
 
-  card.addEventListener("dragstart", (e) => {
-    draggedCard = card;
-  });
+  card.innerHTML = `
+    <span class="card-title">${title}</span>
+    <span class="card-category" style="background:${color}">${categoryName}</span>
+  `;
+
+  card.addEventListener("dragstart", () => (draggedCard = card));
   return card;
 }
 
-let draggedCard = null;
+addTaskBtn.addEventListener("click", () => {
+  const title = taskInput.value.trim();
+  const categoryName = taskCategorySelect.value;
 
+  if (title === "") return alert("Task cannot be empty!");
+  if (categoryName === "") return alert("Select a category!");
+
+  const category = categories.find((c) => c.name === categoryName);
+  const card = createCard(title, category.color, category.name);
+
+  todoColumn.appendChild(card);
+  taskInput.value = "";
+  taskCategorySelect.value = "";
+  saveToLocalStorage();
+});
+
+/*table*/
 [todoColumn, inprogressColumn, doneColumn].forEach((col) => {
   col.addEventListener("dragover", (e) => e.preventDefault());
   col.addEventListener("drop", () => {
@@ -77,7 +100,31 @@ let draggedCard = null;
   });
 });
 
-const saveInfoBtn = document.getElementById("savebtn");
+/*saving*/
+function getColumnTasks(column) {
+  const arr = [];
+  column.querySelectorAll(".task-card").forEach((card) => {
+    arr.push({
+      title: card.querySelector(".card-title").innerText,
+      categoryName: card.querySelector(".card-category").innerText,
+      color: card.querySelector(".card-category").style.background,
+    });
+  });
+  return arr;
+}
+
+function saveToLocalStorage() {
+  const data = {
+    categories,
+    tasks: {
+      todo: getColumnTasks(todoColumn),
+      inprogress: getColumnTasks(inprogressColumn),
+      done: getColumnTasks(doneColumn),
+    },
+  };
+
+  localStorage.setItem("kanbanData", JSON.stringify(data));
+}
 
 saveInfoBtn.addEventListener("click", () => {
   if (!validatePersonalInfo()) {
@@ -97,27 +144,7 @@ saveInfoBtn.addEventListener("click", () => {
   alert("Information saved!");
 });
 
-function saveToLocalStorage() {
-  const data = {
-    categories,
-    tasks: {
-      todo: getColumnTasks(todoColumn),
-      inprogress: getColumnTasks(inprogressColumn),
-      done: getColumnTasks(doneColumn),
-    },
-  };
-
-  localStorage.setItem("kanbanData", JSON.stringify(data));
-}
-
-function getColumnTasks(column) {
-  const arr = [];
-  column.querySelectorAll(".tasktitle").forEach((card) => {
-    arr.push(card.innerText);
-  });
-  return arr;
-}
-
+/*restore*/
 window.addEventListener("load", () => {
   const savedInfo = JSON.parse(localStorage.getItem("userInfo"));
   if (savedInfo) {
@@ -132,16 +159,25 @@ window.addEventListener("load", () => {
 
   categories = savedData.categories || [];
   categories.forEach((cat) => {
-    const item = document.createElement("div");
-    item.innerText = cat.name;
-    item.style.background = cat.color;
-    item.className = "categoryTag";
-    categoryList.appendChild(item);
+    const tag = document.createElement("span");
+    tag.className = "category-tag";
+    tag.style.setProperty("--tag-color", cat.color);
+    tag.textContent = cat.name;
+    categoryList.appendChild(tag);
+
+    const option = document.createElement("option");
+    option.value = cat.name;
+    option.textContent = cat.name;
+    taskCategorySelect.appendChild(option);
   });
 
-  savedData.tasks.todo.forEach((t) => todoColumn.appendChild(createCard(t)));
-  savedData.tasks.doing.forEach((t) =>
-    inprogressColumn.appendChild(createCard(t))
+  savedData.tasks.todo.forEach((t) =>
+    todoColumn.appendChild(createCard(t.title, t.color, t.categoryName))
   );
-  savedData.tasks.done.forEach((t) => doneColumn.appendChild(createCard(t)));
+  savedData.tasks.inprogress.forEach((t) =>
+    inprogressColumn.appendChild(createCard(t.title, t.color, t.categoryName))
+  );
+  savedData.tasks.done.forEach((t) =>
+    doneColumn.appendChild(createCard(t.title, t.color, t.categoryName))
+  );
 });

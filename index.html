@@ -43,7 +43,7 @@
       <h2>Add a task</h2>
       <div class="category-manage">
         <h3>categories(5 max)</h3>
-        <div id="category-list"></div>
+        <div id="category-list" class="category-container"></div>
         <div class="add-category">
           <input type="text" id="newcategname" placeholder="category name" />
           <select id="categ-colour">
@@ -59,7 +59,9 @@
 
       <div class="task-form">
         <input type="text" id="tasktitle" placeholder="Task title" />
-        <select id="taskcategory"></select>
+        <select id="taskcategory">
+          <option value="">Select category</option>
+        </select>
         <button id="addtaskbtn">Add task</button>
       </div>
     </section>
